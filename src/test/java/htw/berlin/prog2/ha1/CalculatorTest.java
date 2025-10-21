@@ -88,7 +88,20 @@ class CalculatorTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    @DisplayName("should multiply two single-digit numbers correctly")
+    void testSimpleMultiplication() {
+        Calculator calc = new Calculator();
 
-    //TODO hier weitere Tests erstellen
+        calc.pressDigitKey(6);
+        calc.pressBinaryOperationKey("x");
+        calc.pressDigitKey(7);
+        calc.pressEqualsKey();
+
+        String expected = "42";
+        String actual = calc.readScreen();
+
+        assertEquals(expected, actual);
+    }
 }
 
