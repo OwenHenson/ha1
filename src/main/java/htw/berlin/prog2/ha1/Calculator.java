@@ -44,6 +44,9 @@ public class Calculator {
      * Werte sowie der aktuelle Operationsmodus zurückgesetzt, so dass der Rechner wieder
      * im Ursprungszustand ist.
      */
+    /**
+     * This clears on first press
+     */
     public void pressClearKey() {
         screen = "0";
         latestOperation = "";
@@ -71,6 +74,7 @@ public class Calculator {
      * der Bildschirminhalt mit dem Ergebnis aktualisiert.
      * @param operation "√" für Quadratwurzel, "%" für Prozent, "1/x" für Inversion
      */
+
     public void pressUnaryOperationKey(String operation) {
         latestValue = Double.parseDouble(screen);
         latestOperation = operation;
@@ -81,9 +85,8 @@ public class Calculator {
             default -> throw new IllegalArgumentException();
         };
         screen = Double.toString(result);
-        if(screen.equals("NaN")) screen = "Error";
+        if(screen.equals("NaN")) screen = "Error"; /** a NaN output should also show a "NaN" not "Error"*/
         if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
-
     }
 
     /**
@@ -126,8 +129,15 @@ public class Calculator {
             default -> throw new IllegalArgumentException();
         };
         screen = Double.toString(result);
-        if(screen.equals("Infinity")) screen = "Error";
+        if(screen.equals("Infinity")) screen = "Error"; /** a "Infinity" output should also show a "Infinity" not "Error"*/
         if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
         if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
     }
 }
+
+/**
+ * (C): Resets everything on the first press,
+ * Repeated equals ("="): The initial version did not repeat the last operation when "=" was pressed multiple times.
+ * ("1/x"): Applying it to 0 resulted in "Infinity" instead of "Error".
+ * Display formatting: Some results had unnecessary trailing ".0" or long decimal values beyond what a calculator normally shows.
+ */
