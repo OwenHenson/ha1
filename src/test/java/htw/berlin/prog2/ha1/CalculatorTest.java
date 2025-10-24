@@ -70,7 +70,7 @@ class CalculatorTest {
 
         assertEquals(expected, actual);
     }
-
+    //Teilaufgabe 2b
     @Test
     @DisplayName("should not allow multiple decimal dots")
     void testMultipleDecimalDots() {
@@ -87,7 +87,7 @@ class CalculatorTest {
 
         assertEquals(expected, actual);
     }
-
+    //Teilaufgabe 2c
     @Test
     @DisplayName("should multiply two single-digit numbers correctly")
     void testSimpleMultiplication() {
@@ -103,5 +103,39 @@ class CalculatorTest {
 
         assertEquals(expected, actual);
     }
-}
+    //Teilaufgabe 2d
+    @Test
+    @DisplayName("should recalculate previous operation when pressing Equal key multiple times")
+    void testRepeatedEqual() {
+        Calculator calc = new Calculator();
 
+        calc.pressDigitKey(6);
+        calc.pressBinaryOperationKey("+");
+        calc.pressDigitKey(9);
+        calc.pressEqualsKey(); // should be 15
+        calc.pressEqualsKey(); // should be 24 (15+9)
+
+        String expected = "24"; 
+        String actual = calc.readScreen();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("should keep stored value and operation after first press of clear key")
+    void testSingleClearKeepsMemory() {
+        Calculator calc = new Calculator();
+
+        calc.pressDigitKey(6);
+        calc.pressBinaryOperationKey("+");
+        calc.pressDigitKey(9);
+        calc.pressClearKey();     // should only clear screen
+        calc.pressDigitKey(7);
+        calc.pressEqualsKey();
+
+        String expected = "13";   // because 6 + 7 = 13
+        String actual = calc.readScreen();
+
+        assertEquals(expected, actual);
+    }
+}
