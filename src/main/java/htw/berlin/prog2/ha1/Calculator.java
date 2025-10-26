@@ -46,13 +46,28 @@ public class Calculator {
      */
     /**
      * This clears on first press
-     */
-    public void pressClearKey() {
+    
+     public void pressClearKey() {
         screen = "0";
         latestOperation = "";
         latestValue = 0.0;
     }
+    */
 
+    //Aufgabeteil 2d (testSingleClearKeepsMemory)
+    private boolean ClearOnce = false;
+
+    public void pressClearKey() {
+        if (ClearOnce == false) {
+            screen = "0";
+            ClearOnce = !ClearOnce;
+        } else {
+            screen = "0";
+            latestOperation = "";
+            latestValue = 0.0;
+            ClearOnce = false;
+        }
+    }
     /**
      * Empfängt den Wert einer gedrückten binären Operationstaste, also eine der vier Operationen
      * Addition, Substraktion, Division, oder Multiplikation, welche zwei Operanden benötigen.
@@ -120,20 +135,85 @@ public class Calculator {
      * Operation (ggf. inklusive letztem Operand) erneut auf den aktuellen Bildschirminhalt angewandt
      * und das Ergebnis direkt angezeigt.
      */
+    private double lastSecondOperand = 0.0;     // to repeat last operation with '='
+    private boolean lastActionWasEquals = false; // track if '=' was just pressed
+
     public void pressEqualsKey() {
-        var result = switch(latestOperation) {
-            case "+" -> latestValue + Double.parseDouble(screen);
-            case "-" -> latestValue - Double.parseDouble(screen);
-            case "x" -> latestValue * Double.parseDouble(screen);
-            case "/" -> latestValue / Double.parseDouble(screen);
-            default -> throw new IllegalArgumentException();
-        };
-        screen = Double.toString(result);
-        if(screen.equals("Infinity")) screen = "Error"; /** a "Infinity" output should also show a "Infinity" not "Error"*/
-        if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
-        if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+        ClearOnce = false;
+
+        if (latestOperation.isEmpty()) { // if no operation, do nothing
+            return;
+        }
+
+        double currentValue = Double.parseDouble(screen);
+        double secondOperand;
+
+        if (lastActionWasEquals) {
+            // repeat last operation using stored second operand
+            secondOperand = lastSecondOperand;
+        } else {
+            // first equals press: use the current screen as the second operand and store it
+            secondOperand = currentValue;
+            lastSecondOperand = secondOperand;
+        }
+        double result;
+        switch (latestOperation) {
+            case "+":
+                result = latestValue + secondOperand;
+                break;
+            case "-":
+                result = latestValue - secondOperand;
+                break;
+            case "x":
+                result = latestValue * secondOperand;
+                break;
+            case "/":
+                // explicit check for division by zero
+                if (secondOperand == 0.0) {
+                    screen = "Error";
+                    // set state such that repeated '=' won't do anything harmful
+                    lastActionWasEquals = false;
+                return;
+                } else {
+                    result = latestValue / secondOperand;
+                }
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+
+        if (Double.isNaN(result) || Double.isInfinite(result)) {
+            screen = "Error";
+            lastActionWasEquals = false;
+            return;
+        }
+
+        // format and display result
+        screen = formatResult(result);
+
+        // update running state: the result becomes the new latestValue
+        latestValue = Double.parseDouble(screen);
+        lastActionWasEquals = true;
     }
-}
+
+    /**
+     * Small helper to format the result similar to the original expectations:
+     * - remove trailing ".0"
+     * - cut off long fractional representations to 10 characters total if necessary
+     */
+    private String formatResult(double value) {
+        String s = Double.toString(value);
+        if (s.endsWith(".0")) {
+            s = s.substring(0, s.length() - 2);
+            return s;
+        }
+        // If it has a decimal and is too long, shorten to 10 chars (as original attempted)
+        if (s.contains(".") && s.length() > 11) {
+            s = s.substring(0, 10);
+        }
+        return s;
+        }
+    }
 
 /**
  * (C): Resets everything on the first press,
